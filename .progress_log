@@ -1,0 +1,74 @@
+{
+  "project_id": "4c77d404-de31-44d5-8af9-94e563d66922",
+  "project_name": "DEM 4",
+  "goal": "Implementar el proyecto: DEM 4\n\nVisión: Se requiere construir un microservicio acortador de URLs en Python + FastAPI que permita a cualquier usuario generar códigos cortos únicos de 8 caracteres para URLs largas, redirigir con tracking de clics, consultar estadísticas y eliminar entradas. El proyect",
+  "last_updated": "2026-05-14T18:23:04.048280Z",
+  "total_items": 6,
+  "completed_count": 5,
+  "status": "in_progress",
+  "current_item_index": 5,
+  "spec_file": "SPEC.md",
+  "plan_file": "DEVELOPMENT_PLAN.md",
+  "contract_manifest_available": false,
+  "all_files_created": [
+    "backend/app/config.py",
+    "backend/app/database/client.py",
+    "backend/app/database/urls.py",
+    "backend/app/models.py",
+    "backend/app/services/encoding.py",
+    "backend/app/services/tracking.py",
+    "backend/app/routes/shorten.py"
+  ],
+  "items": [
+    {
+      "item_number": 1,
+      "title": "Foundation — shared types, configuration, database, and utility modules",
+      "wave": 1,
+      "files_created": [
+        "backend/app/config.py",
+        "backend/app/database/client.py",
+        "backend/app/database/urls.py",
+        "backend/app/models.py",
+        "backend/app/services/encoding.py",
+        "backend/app/services/tracking.py"
+      ],
+      "completed_at": "2026-05-14T18:18:03.796922Z"
+    },
+    {
+      "item_number": 2,
+      "title": "Shorten endpoint — POST /shorten",
+      "wave": 2,
+      "files_created": [
+        "backend/app/routes/shorten.py"
+      ],
+      "completed_at": "2026-05-14T18:23:04.048280Z"
+    },
+    {
+      "item_number": 3,
+      "title": "Redirect endpoint — GET /{short_code}",
+      "wave": 2,
+      "files_created": [
+        "backend/app/routes/shorten.py"
+      ],
+      "completed_at": "2026-05-14T18:23:04.048280Z"
+    },
+    {
+      "item_number": 4,
+      "title": "Stats endpoint — GET /stats/{short_code}",
+      "wave": 2,
+      "files_created": [
+        "backend/app/routes/shorten.py"
+      ],
+      "completed_at": "2026-05-14T18:23:04.048280Z"
+    },
+    {
+      "item_number": 5,
+      "title": "Delete endpoint — DELETE /{short_code}",
+      "wave": 2,
+      "files_created": [
+        "backend/app/routes/shorten.py"
+      ],
+      "completed_at": "2026-05-14T18:23:04.048280Z"
+    }
+  ]
+}

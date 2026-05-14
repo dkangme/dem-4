@@ -1,0 +1,233 @@
+# API_CONTRACT.md
+
+Base URL: `https://short.example.com`  
+All POST requests require `Content-Type: application/json`.
+
+---
+
+## POST /shorten
+
+- **Description**: Create a new short URL  
+- **Auth required**: No (API key included in request body for ownership)
+
+### Request Body (JSON)
+```json
+{
+  "long_url": "<HttpUrl>",
+  "api_key": "<string, len 32-64>"
+}
+```
+
+| Field     | Type             | Required | Constraints                  |
+|-----------|------------------|----------|------------------------------|
+| long_url  | string (HttpUrl) | Yes      | Must be a valid URL          |
+| api_key   | string           | Yes      | Length between 32 and 64     |
+
+### Responses
+
+#### 201 Created
+```json
+{
+  "short_code": "aB3dEf9X",
+  "short_url": "https://short.example.com/aB3dEf9X",
+  "long_url": "https://example.com/very-long-url",
+  "created_at": "2025-03-22T10:00:00Z"
+}
+```
+
+| Field       | Type   | Description                                    |
+|-------------|--------|------------------------------------------------|
+| short_code  | string | 8-character alphanumeric code                  |
+| short_url   | string | Full shortened URL                             |
+| long_url    | string | Original URL                                   |
+| created_at  | datetime | Timestamp of creation (ISO 8601)              |
+
+#### 422 Unprocessable Entity
+```json
+{
+  "detail": "<validation error message>",
+  "code": 422
+}
+```
+
+#### 409 Conflict
+```json
+{
+  "detail": "Collision: short_code already exists (retry)",
+  "code": 409
+}
+```
+
+---
+
+## GET /{short_code}
+
+- **Description**: Redirect to original URL (public, no authentication)  
+- **Auth required**: No  
+
+### Path Parameters
+| Parameter   | Type   | Required | Constraints                |
+|-------------|--------|----------|----------------------------|
+| short_code  | string | Yes      | Exactly 8 characters       |
+
+### Responses
+
+#### 302 Found (Redirect)
+- Redirects the client to the stored `long_url`.
+- Click count incremented in Firestore before redirect.
+
+#### 404 Not Found
+```json
+{
+  "detail": "Short URL not found",
+  "code": 404
+}
+```
+
+#### 400 Bad Request
+```json
+{
+  "detail": "Invalid short_code format",
+  "code": 400
+}
+```
+
+---
+
+## GET /stats/{short_code}
+
+- **Description**: Retrieve click statistics and metadata  
+- **Auth required**: Yes (ownership verification via `api_key` query parameter)
+
+### Path Parameters
+| Parameter   | Type   | Required | Constraints          |
+|-------------|--------|----------|----------------------|
+| short_code  | string | Yes      | 8-character code     |
+
+### Query Parameters
+| Parameter | Type   | Required | Description                       |
+|-----------|--------|----------|-----------------------------------|
+| api_key   | string | Yes      | API key used during URL creation  |
+
+### Responses
+
+#### 200 OK
+```json
+{
+  "short_code": "aB3dEf9X",
+  "long_url": "https://example.com/very-long-url",
+  "created_at": "2025-03-22T10:00:00Z",
+  "clicks": 42,
+  "api_key_owner": "aGVsbG8t...",
+  "is_owner": true
+}
+```
+
+| Field          | Type     | Description                                                     |
+|----------------|----------|----------------------------------------------------------------|
+| short_code     | string   | Short code                                                      |
+| long_url       | string   | Original URL                                                    |
+| created_at     | datetime | Creation timestamp                                              |
+| clicks         | integer  | Total redirect count                                            |
+| api_key_owner  | string   | Masked API key (first 8 chars + “...”)                          |
+| is_owner       | boolean  | True if provided `api_key` matches the stored key               |
+
+#### 404 Not Found
+```json
+{
+  "detail": "Short URL not found",
+  "code": 404
+}
+```
+
+#### 403 Forbidden
+```json
+{
+  "detail": "Forbidden: incorrect api_key",
+  "code": 403
+}
+```
+
+#### 401 Unauthorized
+```json
+{
+  "detail": "Missing api_key query parameter",
+  "code": 401
+}
+```
+
+---
+
+## DELETE /{short_code}
+
+- **Description**: Delete a shortened URL  
+- **Auth required**: Yes (ownership verification via `api_key` query parameter)
+
+### Path Parameters
+| Parameter   | Type   | Required | Constraints      |
+|-------------|--------|----------|------------------|
+| short_code  | string | Yes      | 8 characters     |
+
+### Query Parameters
+| Parameter | Type   | Required | Description                       |
+|-----------|--------|----------|-----------------------------------|
+| api_key   | string | Yes      | API key used during URL creation  |
+
+### Responses
+
+#### 200 OK
+```json
+{
+  "short_code": "aB3dEf9X",
+  "message": "Short URL deleted successfully"
+}
+```
+
+| Field       | Type   | Description           |
+|-------------|--------|-----------------------|
+| short_code  | string | Deleted short code    |
+| message     | string | Confirmation message  |
+
+#### 404 Not Found
+```json
+{
+  "detail": "Short URL not found",
+  "code": 404
+}
+```
+
+#### 403 Forbidden
+```json
+{
+  "detail": "Forbidden: incorrect api_key",
+  "code": 403
+}
+```
+
+#### 401 Unauthorized
+```json
+{
+  "detail": "Missing api_key query parameter",
+  "code": 401
+}
+```
+
+---
+
+## GET /health
+
+- **Description**: Health check (used by Cloud Run)  
+- **Auth required**: No  
+
+### Responses
+
+#### 200 OK
+```json
+{
+  "status": "healthy"
+}
+```
+
+| Field  | Type   | Description  |
+|--------|--------|--------------|
+| status | string | Always "healthy" |
